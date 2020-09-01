@@ -16,16 +16,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class PostsService {
-    private final PostsRepository PostsRepository;
+    private final PostsRepository postsRepository;
 
     @Transactional
     public Long save(PostsSaveRequestDto requestDto){
-        return PostsRepository.save(requestDto.toEntity()).getId();
+        return postsRepository.save(requestDto.toEntity()).getId();
     }
 
     @Transactional
     public Long update(Long id, PostsUpdateRequestDto requestDto){
-        Posts posts = PostsRepository.findById(id).orElseThrow(() -> new
+        Posts posts = postsRepository.findById(id).orElseThrow(() -> new
                 IllegalArgumentException("해당 게시글이 없습니다. id="+id));
         posts.update(requestDto.getTitle(), requestDto.getContent());
 
@@ -33,7 +33,7 @@ public class PostsService {
     }
 
     public PostsResponseDto findById(Long id){
-        Posts entity = PostsRepository.findById(id).orElseThrow(() -> new
+        Posts entity = postsRepository.findById(id).orElseThrow(() -> new
                 IllegalArgumentException("해당 게시글이 없습니다. id="+id));
 
         return new PostsResponseDto(entity);
@@ -41,8 +41,17 @@ public class PostsService {
 
     @Transactional(readOnly = true)
     public List<PostsListResponseDto> findAllDesc(){
-        return PostsRepository.findAllDesc().stream()
+        return postsRepository.findAllDesc().stream()
                 .map(PostsListResponseDto::new)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void delete (Long id) {
+        Posts posts = postsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다. id=" + id));
+
+        postsRepository.delete(posts);// 존재하는 Posts인지 확인을 위해 엔티티 조회 후 그대로 삭제
+    }
+
 }
